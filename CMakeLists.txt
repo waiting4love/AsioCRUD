@@ -16,16 +16,9 @@ SET(CMAKE_CXX_EXTENSIONS OFF)
 
 set ( CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/examples)
 
-find_package(Boost
-             COMPONENTS "log" "system" "serialization" "program_options"
-             REQUIRED
-            )
-
 add_subdirectory(service)
 
-if ( DEFINED CRUD_WITH_EXAMPLES)
-    add_subdirectory(examples)
-endif()
+add_subdirectory(examples)
 
 #Install all json files from our examples
 file(GLOB_RECURSE HTML_FILES ${CMAKE_CURRENT_SOURCE_DIR}/examples/*.html)

@@ -25,8 +25,7 @@
 #include <memory>
 #include <utility>
 #include <iterator>
-#include <boost/asio.hpp>
-#include <boost/lexical_cast.hpp>
+#include <asio.hpp>
 #include "reply.hpp"
 #include "request.hpp"
 #include "request_parser.hpp"
@@ -49,7 +48,7 @@ public:
   persistent_connection& operator=(const persistent_connection&) = delete;
  
   /// Construct a connection with the given socket.
-  explicit persistent_connection(boost::asio::ip::tcp::socket socket,
+  explicit persistent_connection(asio::ip::tcp::socket socket,
       connection_manager_type& manager, request_handler_type& handler)
   : socket_(std::move(socket)),
     connection_manager_(manager),
@@ -71,8 +70,8 @@ private:
   /// Perform an asynchronous read operation.
   void do_read()
   {
-    socket_.async_read_some(boost::asio::buffer(buffer_),
-        [=](boost::system::error_code ec, std::size_t bytes_transferred)
+    socket_.async_read_some(asio::buffer(buffer_),
+        [=](asio::error_code ec, std::size_t bytes_transferred)
         {
             
           if (!ec)
@@ -87,7 +86,7 @@ private:
             ) ;
            
             if ( itr != request_.headers.end()) {
-                request_.data = std::string(data, boost::lexical_cast<long>(itr->value)) ;
+                request_.data = std::string(data, std::stol(itr->value)) ;
             }
             if (result == request_parser::good)
             {
@@ -104,7 +103,7 @@ private:
               do_read();
             }
           }
-          else if (ec != boost::asio::error::operation_aborted)
+          else if (ec != asio::error::operation_aborted)
           {
             connection_manager_.stop(this->shared_from_this());
           }
@@ -115,8 +114,8 @@ private:
   void do_write()
   {
     reply_.headers.emplace_back("Connection:" , "keep-alive");
-    boost::asio::async_write(socket_, reply_.to_buffers(),
-        [=](boost::system::error_code ec, std::size_t)
+    asio::async_write(socket_, reply_.to_buffers(),
+        [=](asio::error_code ec, std::size_t)
         {
             request_parser_.reset();
             reply_.headers.resize(0);
@@ -128,7 +127,7 @@ private:
   }
  
   /// Socket for the persistent_connection.
-  boost::asio::ip::tcp::socket socket_;
+  asio::ip::tcp::socket socket_;
  
   /// The manager for this connection.
   connection_manager_type& connection_manager_;

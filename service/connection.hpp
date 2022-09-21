@@ -19,8 +19,7 @@
 #include <memory>
 #include <utility>
 #include <iterator>
-#include <boost/asio.hpp>
-#include <boost/lexical_cast.hpp>
+#include <asio.hpp>
 #include "reply.hpp"
 #include "request.hpp"
 #include "request_parser.hpp"
@@ -43,7 +42,7 @@ public:
   connection& operator=(const connection&) = delete;
  
   /// Construct a connection with the given socket.
-  explicit connection(boost::asio::ip::tcp::socket socket,
+  explicit connection(asio::ip::tcp::socket socket,
       connection_manager_type& manager, request_handler_type& handler)
   : socket_(std::move(socket)),
     connection_manager_(manager),
@@ -66,8 +65,8 @@ private:
   void do_read()
   {
     auto self(this->shared_from_this());
-    socket_.async_read_some(boost::asio::buffer(buffer_),
-        [=](boost::system::error_code ec, std::size_t bytes_transferred)
+    socket_.async_read_some(asio::buffer(buffer_),
+        [=](asio::error_code ec, std::size_t bytes_transferred)
         {
           if (!ec)
           {
@@ -80,7 +79,7 @@ private:
                                      [](const header &h) { return h.name == "content-length" ; }
             ) ;
             if ( itr != request_.headers.end()) {
-                request_.data = std::string(data, boost::lexical_cast<long>(itr->value)) ;
+                request_.data = std::string(data, std::stol(itr->value)) ;
             }
             if (result == request_parser::good)
             {
@@ -97,7 +96,7 @@ private:
               do_read();
             }
           }
-          else if (ec != boost::asio::error::operation_aborted)
+          else if (ec != asio::error::operation_aborted)
           {
             connection_manager_.stop(this->shared_from_this());
           }
@@ -108,18 +107,18 @@ private:
   void do_write()
   {
     auto self(this->shared_from_this());
-    boost::asio::async_write(socket_, reply_.to_buffers(),
-        [=](boost::system::error_code ec, std::size_t)
+    asio::async_write(socket_, reply_.to_buffers(),
+        [=](asio::error_code ec, std::size_t)
         {
           if (!ec)
           {
             // Initiate graceful connection closure.
-            boost::system::error_code ignored_ec;
-            socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both,
+            asio::error_code ignored_ec;
+            socket_.shutdown(asio::ip::tcp::socket::shutdown_both,
               ignored_ec);
           }
  
-          if (ec != boost::asio::error::operation_aborted)
+          if (ec != asio::error::operation_aborted)
           {
             connection_manager_.stop(this->shared_from_this());
           }
@@ -127,7 +126,7 @@ private:
   }
  
   /// Socket for the connection.
-  boost::asio::ip::tcp::socket socket_;
+  asio::ip::tcp::socket socket_;
  
   /// The manager for this connection.
   connection_manager_type& connection_manager_;

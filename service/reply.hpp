@@ -15,8 +15,7 @@
 
 #include <string>
 #include <vector>
-#include <boost/asio.hpp>
-#include <boost/serialization/strong_typedef.hpp>
+#include <asio.hpp>
 #include "header.hpp"
 #include "mime_types.hpp"
 
@@ -26,7 +25,28 @@ namespace server {
 /// A reply to be sent to a client.
 struct reply
 {
-  BOOST_STRONG_TYPEDEF(std::string, flush)  
+  //BOOST_STRONG_TYPEDEF(std::string, flush)  
+  class flush
+  {
+  public:
+    using cr = const std::string&;
+    explicit flush(std::string val)
+        : value_(std::move(val)) {}
+
+    operator cr() const noexcept
+    {
+      return value_;
+    }
+
+    operator std::string&() noexcept
+    {
+      return value_;
+    }
+
+  private:
+    std::string value_;
+  };
+
   /// The status of the reply.
   enum status_type
   {
@@ -57,7 +77,7 @@ struct reply
   /// Convert the reply into a vector of buffers. The buffers do not own the
   /// underlying memory blocks, therefore the reply object must remain valid and
   /// not be changed until the write operation has completed.
-  std::vector<boost::asio::const_buffer> to_buffers();
+  std::vector<asio::const_buffer> to_buffers();
 
   /// Get a stock reply.
   static reply stock_reply(status_type status, const char* mime = mime_types::HTML);

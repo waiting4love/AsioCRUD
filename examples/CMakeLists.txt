@@ -2,7 +2,10 @@
 
 cmake_minimum_required(VERSION 3.3.2)
 
-include_directories(${Boost_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR})
+set(ASIO_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/asio-1.24.0/include")
+include_directories(${ASIO_INCLUDE_DIR} ${PROJECT_SOURCE_DIR})
+
+set(SYSLIBS ws2_32 Mswsock)
 
 add_executable(
         regex_restful_service
@@ -29,29 +32,29 @@ find_package (Threads)
 target_link_libraries(
         regex_restful_service
         crud_service
-        ${Boost_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
+        ${SYSLIBS}
         )
 
 target_link_libraries(
         simple_restful_service
         crud_service
-        ${Boost_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
+        ${SYSLIBS}
         )
 
 target_link_libraries(
         persisted_regex_restful_service
         crud_service
-        ${Boost_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
+        ${SYSLIBS}
         )
 
 
 target_link_libraries(
         webserver 
         crud_service
-        ${Boost_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
+        ${SYSLIBS}
         )
 

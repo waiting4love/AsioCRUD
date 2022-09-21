@@ -17,7 +17,7 @@
 #define HTTP_SERVER_HPP
 
 #include <thread>
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include <string>
 #include <signal.h>
 #include <utility>
@@ -60,11 +60,11 @@ public:
     do_await_stop();
  
     // Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
-    boost::asio::ip::tcp::resolver resolver(io_service_);
-    boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve({address, port});
+    asio::ip::tcp::resolver resolver(io_service_);
+    asio::ip::tcp::endpoint endpoint = *resolver.resolve({address, port});
     acceptor_.open(endpoint.protocol());
-    acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
-    acceptor_.set_option( boost::asio::socket_base::keep_alive(true));
+    acceptor_.set_option(asio::ip::tcp::acceptor::reuse_address(true));
+    acceptor_.set_option( asio::socket_base::keep_alive(true));
     acceptor_.bind(endpoint);
     acceptor_.listen();
  
@@ -86,7 +86,7 @@ private:
   void do_accept()
   {
     acceptor_.async_accept(socket_,
-     [this](boost::system::error_code ec)
+     [this](asio::error_code ec)
      {
        // Check whether the server was stopped by a signal before this
        // completion handler had a chance to run.
@@ -109,7 +109,7 @@ private:
   void do_await_stop()
   {
     signals_.async_wait(
-        [this](boost::system::error_code /*ec*/, int /*signo*/)
+        [this](asio::error_code /*ec*/, int /*signo*/)
         {
           // The server is stopped by cancelling all outstanding asynchronous
           // operations. Once all operations have finished the io_service::run()
@@ -123,19 +123,19 @@ private:
   typedef std::shared_ptr<connection_type> connection_type_ptr;
  
   /// The io_service used to perform asynchronous operations.
-  boost::asio::io_service io_service_;
+  asio::io_service io_service_;
  
   /// The signal_set is used to register for process termination notifications.
-  boost::asio::signal_set signals_;
+  asio::signal_set signals_;
  
   /// Acceptor used to listen for incoming connections.
-  boost::asio::ip::tcp::acceptor acceptor_;
+  asio::ip::tcp::acceptor acceptor_;
  
   /// The connection manager which owns all live connections.
   connection_manager<connection_type_ptr> connection_manager_;
  
   /// The next socket to be accepted.
-  boost::asio::ip::tcp::socket socket_;
+  asio::ip::tcp::socket socket_;
  
   /// The handler for all incoming requests.
   request_handler_type request_handler_;

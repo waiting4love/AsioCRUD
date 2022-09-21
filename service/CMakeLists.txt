@@ -2,19 +2,10 @@
 set(CMAKE_CXX_STANDARD 14)
 
 ## Configuring Boost
-set(REQUIRED_BOOST_LIBRARIES)
-list(APPEND REQUIRED_BOOST_LIBRARIES "system")
-list(APPEND REQUIRED_BOOST_LIBRARIES "regex")
-set(Boost_USE_MULTITHREADED ON)
 
-find_package(Boost
-             COMPONENTS "${REQUIRED_BOOST_LIBRARIES}"
-             REQUIRED
-            )
+set(ASIO_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/asio-1.24.0/include")
 
-if(Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
-endif()
+include_directories(${ASIO_INCLUDE_DIR})
 
 include_directories(../handlers)
 
@@ -34,9 +25,7 @@ add_library(crud_service
            )
 find_package (Threads)
 
-if (Boost_LIBRARIES)
-    target_link_libraries( crud_service ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-endif()
+target_link_libraries( crud_service ${CMAKE_THREAD_LIBS_INIT})
 
 install(TARGETS crud_service
   ARCHIVE DESTINATION lib

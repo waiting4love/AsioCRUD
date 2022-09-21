@@ -13,7 +13,7 @@
  
 #include <iostream>
 #include <string>
-#include <boost/asio.hpp>
+#include <asio.hpp>
 #include "service/server.hpp"
 #include "service/request_handler.hpp"
 #include "service/request.hpp"
@@ -42,13 +42,13 @@ int main(int argc, char* argv[])
     restful_dispatcher_t handler(argv[3]) ;
    
     // READ or CREAT/UPDATE "/venue_handler/XEMDP/123"
-    handler.crud_match(boost::regex("/venue_handler/(\\w+)/(\\d+)") )
-        .get([](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+    handler.crud_match(std::regex("/venue_handler/(\\w+)/(\\d+)") )
+        .get([](http::server::reply & r, const http::crud::crud_match<std::cmatch> & match) {
             r << "name: " << match[1] << ", instance number: " << match[2]
               << http::server::reply::flush("text") ;
             std::cout << "GET request=" << match[0] << std::endl;
         })
-        .post([](http::server::reply & r, const http::crud::crud_match<boost::cmatch>  & match) {
+        .post([](http::server::reply & r, const http::crud::crud_match<std::cmatch>  & match) {
             r << "name: " << match[1] << ", instance number: " << match[2]
               << http::server::reply::flush("test") ;
             std::cout << "POST request=" << match[0] << std::endl;
@@ -56,8 +56,8 @@ int main(int argc, char* argv[])
         }) ;
        
     // READ "/venue_handler/FLO/"
-    handler.crud_match(boost::regex("/venue_handler/(\\w+)") )
-        .post([](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+    handler.crud_match(std::regex("/venue_handler/(\\w+)") )
+        .post([](http::server::reply & r, const http::crud::crud_match<std::cmatch> & match) {
             r << "name: " << match[1]
               << http::server::reply::flush("text") ;
             std::cout << "POST request=" << match[0] << std::endl;

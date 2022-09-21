@@ -44,36 +44,34 @@
 #define                __HTTP_CRUD_DISPATHCHER_HPP__
  
 #include "crud_matcher.hpp"
-#include <boost/regex.hpp>
+#include <regex>
 #include <memory>
-#ifdef __GNUC__
 #include <map>
-#else
-//due to CC 12.4 bug #20814942, Assetion ../lnk/declarations.cc line 1378 std::map<int, shared_ptr<T>>
-#include <boost/container/flat_map.hpp>
-#endif
  
 namespace http { namespace crud {
-    template<typename Request, typename Response, typename Match=boost::cmatch, typename Expression=boost::regex>
+    template<typename Request, typename Response, typename Match=std::cmatch, typename Expression=std::regex>
     class crud_dispatcher {
         typedef crud_matcher<Response, Expression, Match> crud_matcher_type ;
         typedef std::shared_ptr<crud_matcher_type> crud_matcher_type_p ;
     public :
         crud_dispatcher() : _base_path() {}
         crud_dispatcher(const std::string &base_path) : _base_path(base_path) {}
-        crud_matcher_type & crud_match(const Expression &expression) {
-            crud_matcher_type_p & p = _crud_matchers[expression] ;
-            if(!p) {
-                p = std::make_shared<crud_matcher_type>(expression) ;
-            }
+        crud_matcher_type & crud_match(Expression expression) {
+            auto p = std::make_shared<crud_matcher_type>(expression);
+            _crud_matchers.emplace_back(std::move(expression), p);
             return *p;
+            // crud_matcher_type_p & p = _crud_matchers[expression] ;
+            // if(!p) {
+            //     p = std::make_shared<crud_matcher_type>(expression) ;
+            // }
+            // return *p;
         }
         template<typename E = Expression>
         typename std::enable_if<!std::is_same<E, std::string>::value, void>::type
         handle_request(const Request& request, Response& response) {
             for ( const auto &matcher : _crud_matchers ) {
                 Match what;
-                if ( boost::regex_match(request.uri.c_str(), what,  matcher.first ) ) {
+                if ( std::regex_match(request.uri.c_str(), what,  matcher.first ) ) {
                     matcher.second->handle_request(request, response, what) ;
                 }
             }
@@ -91,11 +89,8 @@ namespace http { namespace crud {
         }
     private:
         std::string _base_path;
-#ifdef __GNUC__
-        std::map<Expression, crud_matcher_type_p> _crud_matchers ;
-#else
-        boost::container::flat_map<Expression, crud_matcher_type_p> _crud_matchers ;
-#endif
+        //std::map<Expression, crud_matcher_type_p> _crud_matchers ;
+        std::vector< std::pair<Expression, crud_matcher_type_p> > _crud_matchers ;
     };
    
 }}
